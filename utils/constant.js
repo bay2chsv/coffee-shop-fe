@@ -3,7 +3,7 @@ import { jwtDecode } from "jwt-decode";
 import { BaseConfig } from "./config";
 export const baseAPI = `http://${BaseConfig.BACKEND_HOST_IP}:${BaseConfig.BACKEND_HOST_PORT}/api/v1`;
 export const baseAPIAuth = `http://${BaseConfig.BACKEND_HOST_IP}:${BaseConfig.BACKEND_HOST_PORT}/api/auth`;
-
+export const baseAPIImage = `http://${BaseConfig.BACKEND_HOST_IP}:${BaseConfig.BACKEND_HOST_PORT}/api/image`;
 export const accessToken = Cookies.get("accessToken");
 
 export const getRole = async (token) => {

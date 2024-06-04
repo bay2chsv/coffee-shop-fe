@@ -13,28 +13,28 @@
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.14.11",
     "@mui/material": "^5.14.11",
-    "@mui/x-charts": "^6.18.0",
+    "@mui/x-charts": "^6.19.8",
     "@mui/x-data-grid": "^7.5.0",
-    "@mui/x-date-pickers": "^6.18.0",
+    "@mui/x-date-pickers": "^7.6.1",
     "apexcharts": "^3.43.0",
     "axios": "^1.5.1",
     "date-fns": "^2.30.0",
-    "dayjs": "^1.11.10",
+    "dayjs": "^1.11.11",
     "js-cookie": "^3.0.5",
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^4.0.0",
     "mui-tel-input": "^4.0.0",
-    "next": "latest",
+    "next": "^14.2.3",
     "nookies": "^2.5.2",
-    "react": "latest",
+    "react": "^18.3.1",
     "react-apexcharts": "^1.4.1",
-    "react-dom": "latest",
+    "react-dom": "^18.3.1",
     "recharts": "^2.8.0",
     "sweetalert2": "^11.11.0"
   },
   "devDependencies": {
     "encoding": "^0.1.13",
     "eslint": "latest",
-    "eslint-config-next": "latest"
+    "eslint-config-next": "^14.2.3"
   }
 }

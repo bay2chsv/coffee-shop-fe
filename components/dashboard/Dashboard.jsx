@@ -171,7 +171,7 @@ export default function Dashboard({ children, name, list }) {
               overflow: "auto",
             }}
           >
-            <Container sx={{ m: 1 }} maxWidth="lg">
+            <Container sx={{ m: 3 }} maxWidth="lg">
               {children}
             </Container>
           </Box>

@@ -3,43 +3,64 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { baseAPI } from "./constant";
 import Swal from "sweetalert2";
+
 const axiosInstance = axios.create({
   baseURL: baseAPI, // Your NestJS API base URL
 });
 
 axiosInstance.interceptors.response.use(
-  (config) => {
-    if (config.status === 201) {
+  (response) => {
+    if (response.status === 201) {
       Swal.fire({
         title: "Success!",
-        text: `${config.data.message}`,
+        text: `${response.data.message}`,
         icon: "success",
       });
     }
-    return config;
+
+    // Check if the method is PATCH and status is 200
+    if (response.status === 200 && response.config.method === "patch") {
+      Swal.fire({
+        title: "Update Success!",
+        text: `${response.data.message}`,
+        icon: "success",
+      });
+    }
+    if (response.status === 200 && response.config.method === "delete") {
+      Swal.fire({
+        title: "Delete Success!",
+        text: `${response.data.message}`,
+        icon: "success",
+      });
+    }
+
+    return response;
   },
   (error) => {
     console.log("Error details:", error);
     if (error && error.response && error.response.status) {
-      if (error.response.status === 401) {
-        Swal.fire({
-          title: "Unauthorized 401",
-          text: `${error.response.data.message}`,
-          icon: "error",
-        });
-        if (error.response.status === 403) {
+      let status = error.response.status;
+      switch (status) {
+        case 401:
+          Swal.fire({
+            title: "Unauthorized 401",
+            text: `${error.response.data.message}`,
+            icon: "error",
+          });
+          break;
+        case 403:
           Swal.fire({
             title: "Forbidden 403",
             text: `${error.response.data.message}`,
             icon: "error",
           });
-        }
-      } else {
-        Swal.fire({
-          title: "Failed",
-          text: `${error.response.data.message}`,
-          icon: "error",
-        });
+          break;
+        default:
+          Swal.fire({
+            title: "Failed",
+            text: `${error.response.data.message}`,
+            icon: "error",
+          });
       }
     } else {
       Swal.fire({

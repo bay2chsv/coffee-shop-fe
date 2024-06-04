@@ -1,3 +1,6 @@
+import { formatDate } from "@/utils/formatData";
+import { Box, Grid, Typography } from "@mui/material";
+import { green, red } from "@mui/material/colors";
 import { format } from "date-fns";
 import React from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
@@ -10,7 +13,6 @@ const Chart = ({ bills }) => {
     acc[day] = (acc[day] || 0) + parseInt(bill.total, 10);
     return acc;
   }, {});
-
   // Sorting dates in ascending order
   const sortedDates = Object.keys(groupedData).sort((a, b) => new Date(a) - new Date(b));
   // Transforming sorted grouped data into an array for recharts
@@ -18,15 +20,21 @@ const Chart = ({ bills }) => {
     day,
     total: groupedData[day],
   }));
-
+  if (!(bills.length > 0)) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" width={400} height={250}>
+        No data on this Month
+      </Box>
+    );
+  }
   return (
-    <ResponsiveContainer width="13%" height={250}>
+    <ResponsiveContainer width="15%" height={250}>
       <BarChart data={chartData} margin={{ left: 15, top: 20 }}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="day" />
-        <YAxis color="" />
+        <YAxis color={red[400]} dataKey="total" />
         <Tooltip />
-        <Bar dataKey="total" fill="#7DCEA0" />
+        <Bar dataKey="total" fill={green[400]} />
       </BarChart>
     </ResponsiveContainer>
   );

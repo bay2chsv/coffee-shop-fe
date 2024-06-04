@@ -16,7 +16,7 @@ export default function Layout({ children }) {
   });
   if (isMangerDashboardPath) {
     return (
-      <ProtectedRoute requiredRole={["ROLE_ADMIN", "ROLE_COLLABORATOR"]}>
+      <ProtectedRoute requiredRole={["admin", "manager"]}>
         <Dashboard name="Manger Dashboard" list={<ManagerListItems />}>
           {children}
         </Dashboard>
@@ -25,7 +25,7 @@ export default function Layout({ children }) {
   }
   if (isEmployeeDashboardPath) {
     return (
-      <ProtectedRoute requiredRole={["ROLE_ADMIN", "ROLE_JOURNALIST"]}>
+      <ProtectedRoute requiredRole={["admin", "manager", "employee"]}>
         <Dashboard name="Employee Dashboard" list={<EmployeeListItems />}>
           {children}
         </Dashboard>
@@ -34,7 +34,7 @@ export default function Layout({ children }) {
   }
   if (isAdminDashboardPath) {
     return (
-      <ProtectedRoute requiredRole={["ROLE_ADMIN"]}>
+      <ProtectedRoute requiredRole={["admin"]}>
         <Dashboard name="Admin Dashboard" list={<AdminListItems />}>
           {children}
         </Dashboard>

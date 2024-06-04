@@ -4,7 +4,9 @@ import LoginIcon from "@mui/icons-material/Login";
 import Cookies from "js-cookie";
 import axios from "axios";
 import { accessToken, baseAPIAuth, configAuth } from "@/utils/constant";
+import { useRouter } from "next/router";
 function InfoUser() {
+  const router = useRouter();
   const [anchorElUser, setAnchorElUser] = React.useState(null);
   const handleOpenUserMenu = (event) => {
     setAnchorElUser(event.currentTarget);
@@ -15,17 +17,16 @@ function InfoUser() {
   const handleSubmit = async () => {
     try {
       const { data } = await axios.post(`${baseAPIAuth}/signout`, {}, configAuth(accessToken));
-      console.log(data);
       if (data.success) {
         const cookieNames = Object.keys(Cookies.get());
         // Remove each cookie
         cookieNames.forEach((cookieName) => {
           Cookies.remove(cookieName);
         });
+        router.reload();
       }
     } catch (error) {}
   };
-
   return (
     <React.Fragment>
       <Tooltip title="Open settings">
