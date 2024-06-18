@@ -1,24 +1,41 @@
-import { getAuthHeaders, getAuthTokenFromCookie } from "@/components/auth";
 import * as React from "react";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import { format } from "date-fns";
 import { useState } from "react";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { FormControl, InputLabel, MenuItem, Paper, Select, TextField, Typography } from "@mui/material";
+import Table from "@/components/Table";
 import { useEffect } from "react";
 import { Button, Grid } from "@mui/material";
-import { useRouter } from "next/navigation";
 import axiosInstance from "@/utils/axiosInstance";
 import { accessToken, configAuth } from "@/utils/constant";
-import { DataGrid } from "@mui/x-data-grid";
 import { formatDate } from "@/utils/formatData";
 import Swal from "sweetalert2";
-function BillTable({ children, timeFrom, timeTo }) {
+function indexBill() {
+  const [timeTo, setTimeTo] = useState(null);
+  const [timeFrom, setTimeFrom] = useState(null);
+  const [isCancel, setIsCancel] = useState(null);
+  const handleChange = (event) => {
+    setIsCancel(event.target.value);
+  };
+  const handleTimeTo = (newValue) => {
+    if (!newValue) {
+      setTimeTo(null);
+    } else {
+      let timeFormate = `${newValue.$y}-${newValue.$M + 1}-${newValue.$D}`;
+      setTimeTo(timeFormate);
+    }
+  };
+  const handleTimeFrom = (newValue) => {
+    if (!newValue) {
+      setTimeFrom(null);
+    } else {
+      let timeFormate = `${newValue.$y}-${newValue.$M + 1}-${newValue.$D}`;
+      setTimeFrom(timeFormate);
+    }
+  };
   const [bills, setBills] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, pageSize: 5, totalItem: 0 });
-
+  const [id, setId] = useState(null);
   // Create an event handler to update the selected date when the DatePicker value changes.
   const showDetailOfBIll = async (id) => {
     const { data } = await axiosInstance.get(`bills/${id}`, configAuth(accessToken));
@@ -58,27 +75,12 @@ function BillTable({ children, timeFrom, timeTo }) {
   const handlePageSizeChange = (newPageSize) => {
     setPagination((prev) => ({ ...prev, pageSize: newPageSize, page: 1 }));
   };
-  const router = useRouter();
-  const axiosGetBill = async () => {
-    let pathUrl = `bills?page=${pagination.page}&limit=${pagination.pageSize}`;
-    if (timeFrom) {
-      pathUrl += `&timeform=${timeFrom}`;
-    }
-    if (timeTo) {
-      pathUrl += `&timeto=${timeTo}`;
-    }
-    try {
-      const { data } = await axiosInstance.get(pathUrl, configAuth(accessToken));
-      console.log(data);
-      setBills(data.data);
-      setPagination((prev) => ({ ...prev, totalItem: data.totalItem }));
-    } catch (e) {}
-  };
+
   const columns = [
     { field: "id", headerName: "ID", width: 100 },
     {
       field: "coffeeTable",
-      headerName: "Bill status",
+      headerName: "Table",
       width: 150,
       resizable: false,
       renderCell: (params) => <div>{params.row.coffeeTable.name}</div>,
@@ -138,8 +140,26 @@ function BillTable({ children, timeFrom, timeTo }) {
   ];
 
   useEffect(() => {
+    const axiosGetBill = async () => {
+      let pathUrl = `bills?page=${pagination.page}&limit=${pagination.pageSize}`;
+      if (isCancel !== undefined && isCancel !== null) {
+        pathUrl += `&cancel=${isCancel}`;
+      }
+      if (timeFrom) {
+        pathUrl += `&timeform=${timeFrom}`;
+      }
+      if (timeTo) {
+        pathUrl += `&timeto=${timeTo}`;
+      }
+      if (id) pathUrl += `&id=${id}`;
+      try {
+        const { data } = await axiosInstance.get(pathUrl, configAuth(accessToken));
+        setBills(data.data);
+        setPagination((prev) => ({ ...prev, totalItem: data.totalItem }));
+      } catch (e) {}
+    };
     axiosGetBill();
-  }, [timeFrom, timeTo, pagination.page, pagination.pageSize]);
+  }, [timeFrom, timeTo, pagination.page, pagination.pageSize, isCancel, id]);
   const handleDelete = async (id) => {
     const result = await Swal.fire({
       title: "Are you sure?",
@@ -161,32 +181,54 @@ function BillTable({ children, timeFrom, timeTo }) {
       } catch (error) {}
     }
   };
+
   return (
-    <Grid container>
-      <Grid item> {children}</Grid>
-      <Grid item xs={12} maxWidth="md" sx={{ height: 400 }}>
-        <DataGrid
-          rows={bills}
-          columns={columns}
-          paginationMode="server"
-          rowCount={pagination.totalItem}
-          paginationModel={{
-            page: pagination.page - 1,
-            pageSize: pagination.pageSize,
-          }}
-          onPaginationModelChange={(newPagination) => {
-            if (newPagination.pageSize !== pagination.pageSize) {
-              handlePageSizeChange(newPagination.pageSize);
-            }
-            if (newPagination.page !== pagination.page - 1) {
-              handlePageChange(newPagination.page);
-            }
-          }}
-          pageSizeOptions={[5, 10]}
-        />
-      </Grid>
-    </Grid>
+    <Paper>
+      <Table
+        handlePageSizeChange={handlePageSizeChange}
+        handlePageChange={handlePageChange}
+        columns={columns}
+        data={bills}
+        pagination={pagination}
+      >
+        <Grid container>
+          <Grid item xs={6}>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DatePicker sx={{ mr: 1 }} onChange={handleTimeFrom} label="Time from" format="DD/MM/YYYY" />
+              <DatePicker onChange={handleTimeTo} label="Time to" format="DD/MM/YYYY" />
+            </LocalizationProvider>
+          </Grid>
+          <Grid item xs={1} sx={{ mr: 1 }}>
+            <TextField
+              label="Id"
+              value={id}
+              onChange={(e) => {
+                setId(e.target.value);
+              }}
+            />
+          </Grid>
+          <Grid item xs={2}>
+            <FormControl fullWidth>
+              <InputLabel id="demo-simple-select-label"> Bill status </InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                value={isCancel}
+                label=" Bill status "
+                onChange={handleChange}
+              >
+                <MenuItem value={null}>
+                  <em>None</em>
+                </MenuItem>
+                <MenuItem value={false}>Check</MenuItem>
+                <MenuItem value={true}>Cancel</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+        </Grid>
+      </Table>
+    </Paper>
   );
 }
 
-export default BillTable;
+export default indexBill;

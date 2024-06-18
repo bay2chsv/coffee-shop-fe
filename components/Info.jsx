@@ -50,24 +50,6 @@ function InfoUser() {
         open={Boolean(anchorElUser)}
         onClose={handleCloseUserMenu}
       >
-        <MenuItem onClick={handleCloseUserMenu}>
-          <Button
-            style={{ textTransform: "none", color: "black" }}
-            onClick={() => {
-              if (role === "ROLE_USER") {
-                window.location.href = "/profile";
-              } else if (role === "ROLE_ADMIN") {
-                window.location.href = "/admin/profile";
-              } else if (role === "ROLE_COLLABORATOR") {
-                window.location.href = "/collaborator/profile";
-              } else {
-                window.location.href = "/journalist/profile";
-              }
-            }}
-          >
-            <Typography>Profile</Typography>
-          </Button>
-        </MenuItem>
         <MenuItem>
           <Button
             style={{ textTransform: "none", color: "black" }}

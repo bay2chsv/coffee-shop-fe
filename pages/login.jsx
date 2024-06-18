@@ -14,13 +14,13 @@ import Typography from "@mui/material/Typography";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Cookies from "js-cookie";
 import { useState } from "react";
-import { accessToken, getRole } from "@/utils/constant";
+import { accessToken, baseAPIAuth, getRole } from "@/utils/constant";
 import { roleConfig } from "@/utils/config";
 import axios from "axios";
 import { useEffect } from "react";
 import Swal from "sweetalert2";
 import { useRouter } from "next/router";
-import logo from "@/components/image/2.png";
+
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
@@ -46,15 +46,19 @@ const Login = () => {
       return;
     }
     try {
-      const { data } = await axios.post("http://localhost:5000/api/auth/signin", {
+      const { data } = await axios.post(`${baseAPIAuth}/signin`, {
         email: email,
         password: password,
       });
       const token = data.data.accessToken;
-      if (token) {
-        Cookies.set("accessToken", token);
-        router.reload();
-      }
+
+      Cookies.set("accessToken", token);
+      Swal.fire({
+        title: "Success",
+        text: `${data.message}`,
+        icon: "success",
+      });
+      router.reload();
     } catch (error) {
       Swal.fire({
         title: "Failed",
@@ -84,6 +88,7 @@ const Login = () => {
         if (role === roleConfig.ADMIN) window.location.href = "/admin";
         if (role === roleConfig.EMPLOYEE) window.location.href = "/employee";
         if (role === roleConfig.MANAGER) window.location.href = "/manager";
+        if (role === roleConfig.USER) window.location.href = "/";
       }
     }
   };
@@ -124,7 +129,7 @@ const Login = () => {
             <Typography component="h1" variant="h5">
               Welcome to Bay's coffee shop
             </Typography>
-            <Avatar src={logo.src} sx={{ m: 2, height: 80, width: 80, bgcolor: "secondary.main" }}></Avatar>
+            <Avatar src="/2.png" sx={{ m: 2, height: 80, width: 80, bgcolor: "secondary.main" }}></Avatar>
             <Typography component="h1" variant="h5">
               Sign in
             </Typography>
@@ -149,12 +154,13 @@ const Login = () => {
               </Button>
               <Grid container>
                 <Grid item xs>
-                  <Link href="#" variant="body2">
-                    Forgot password?
+                  {" "}
+                  <Link href="/" variant="body2">
+                    Home
                   </Link>
                 </Grid>
                 <Grid item>
-                  <Link href="#" variant="body2">
+                  <Link href="/register" variant="body2">
                     {"Don't have an account? Sign Up"}
                   </Link>
                 </Grid>

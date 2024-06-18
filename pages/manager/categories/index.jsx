@@ -1,26 +1,39 @@
-import { Button, Grid, Paper } from "@mui/material";
+import { Autocomplete, Button, Grid, Link, Paper, TextField } from "@mui/material";
 import React, { useEffect, useState } from "react";
 
 import axiosInstance from "@/utils/axiosInstance";
+import { green, red } from "@mui/material/colors";
 import Swal from "sweetalert2";
-import { accessToken, configAuth } from "@/utils/constant";
+import { accessToken, baseAPI, configAuth } from "@/utils/constant";
+import { parseCookies } from "nookies";
 import Table from "@/components/Table";
-function indexCoffee() {
-  const [coffeetable, setCoffeetable] = useState([]);
+
+export async function getServerSideProps(context) {
+  const cookies = parseCookies(context);
+  const accessToken = cookies.accessToken;
+  const res = await fetch(`${baseAPI}/categories`, configAuth(accessToken));
+  const categories = await res.json();
+  return { props: { categories } };
+}
+function categories({ categories }) {
+  const [search, setSearch] = useState(null);
+  const [category, setCategory] = useState([]);
 
   const [pagination, setPagination] = useState({ page: 1, pageSize: 5, totalItem: 0 });
 
-  const axiosgetAllCoffeeTable = async () => {
-    let pathUrl = `coffeetables?page=${pagination.page}&limit=${pagination.pageSize}`;
-
+  const axiosgetAllCategory = async () => {
+    let pathUrl = `categories?page=${pagination.page}&limit=${pagination.pageSize}`;
+    if (search) {
+      pathUrl += `&name=${search.name}`;
+    }
     const { data } = await axiosInstance.get(pathUrl);
-    setCoffeetable(data.data);
+    setCategory(data.data);
     setPagination((prev) => ({ ...prev, totalItem: data.totalItem }));
   };
 
   useEffect(() => {
-    axiosgetAllCoffeeTable();
-  }, [pagination.page, pagination.pageSize]);
+    axiosgetAllCategory();
+  }, [search, pagination.page, pagination.pageSize]);
 
   const handlePageChange = (newPage) => {
     setPagination((prev) => ({ ...prev, page: newPage + 1 }));
@@ -51,7 +64,7 @@ function indexCoffee() {
   ];
   const handleCreate = async () => {
     const { value: formValues } = await Swal.fire({
-      title: "Enter drink details",
+      title: "Enter Category details",
       html: '<input id="swal-input1" class="swal2-input" placeholder="Name">',
       focusConfirm: false,
       confirmButtonText: "Create",
@@ -70,18 +83,18 @@ function indexCoffee() {
 
     if (formValues) {
       try {
-        const { data } = await axiosInstance.post(`coffeetables?name=${formValues.name}`, {}, configAuth(accessToken));
-        axiosgetAllCoffeeTable();
+        const { data } = await axiosInstance.post(`categories?name=${formValues.name}`, {}, configAuth(accessToken));
+        axiosgetAllCategory();
       } catch (e) {}
       // Now you can use drinkBody as needed
     }
   };
   const handleEdit = async (row) => {
-    const { data } = await axiosInstance.get(`coffeetables/${row.id}`);
-    const coffeetable = data.data;
+    const { data } = await axiosInstance.get(`categories/${row.id}`);
+    const category = data.data;
     const { value: formValues } = await Swal.fire({
-      title: "Enter Table details",
-      html: `<input id="swal-input0" class="swal2-input" value="${coffeetable.id}" disabled> <input id="swal-input1" class="swal2-input" value="${coffeetable.name}" placeholder="Name"> `,
+      title: "Enter Category details",
+      html: `<input id="swal-input0" class="swal2-input" value="${category.id}" disabled> <input id="swal-input1" class="swal2-input" value="${category.name}" placeholder="Name"> `,
       focusConfirm: false,
       confirmButtonText: "Update",
       showCancelButton: true,
@@ -99,13 +112,8 @@ function indexCoffee() {
 
     if (formValues) {
       try {
-        const { data } = await axiosInstance.patch(
-          `coffeetables/${coffeetable.id}?name=${formValues.name.trim()}`,
-          {},
-          configAuth(accessToken)
-        );
-
-        axiosgetAllCoffeeTable();
+        const { data } = await axiosInstance.patch(`categories/${category.id}?name=${formValues.name.trim()}`, {}, configAuth(accessToken));
+        axiosgetAllCategory();
       } catch (e) {}
       // Now you can use drinkBody as needed
     }
@@ -123,11 +131,12 @@ function indexCoffee() {
     });
 
     if (result.isConfirmed) {
+      console.log(id);
       try {
-        const { data } = await axiosInstance.delete(`coffeetables/${id}`, configAuth(accessToken));
+        const { data } = await axiosInstance.delete(`categories/${id}`, configAuth(accessToken));
         if (data.success) {
           Swal.fire("Deleted!", data.message, "success");
-          axiosgetAllDrink();
+          axiosgetAllCategory();
         }
       } catch (error) {}
     }
@@ -139,13 +148,26 @@ function indexCoffee() {
         handlePageChange={handlePageChange}
         columns={columns}
         handleCreate={handleCreate}
-        data={coffeetable}
+        data={category}
         pagination={pagination}
       >
-        <Grid item xs={3}></Grid>
+        <Grid item xs={3}>
+          <Autocomplete
+            disablePortal
+            id="combo-box-demo"
+            value={search}
+            size="small"
+            options={categories.data}
+            getOptionLabel={(option) => option.name}
+            renderInput={(params) => <TextField {...params} label="Category" />}
+            onChange={(e, newValue) => {
+              setSearch(newValue);
+            }}
+          />
+        </Grid>
         <Grid item xs={6} />
       </Table>
     </Paper>
   );
 }
-export default indexCoffee;
+export default categories;

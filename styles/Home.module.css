@@ -227,3 +227,18 @@
     transform: rotate(0deg);
   }
 }
+
+/* styles/Home.module.css */
+
+.logo {
+  max-height: 50px;
+}
+
+
+
+.slideImage {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}

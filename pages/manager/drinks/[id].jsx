@@ -1,47 +1,62 @@
+import Dashboard from "@/components/dashboard/Dashboard";
 import * as React from "react";
 import axios from "axios";
 import { useState } from "react";
 
-import { accessToken, baseAPI, baseAPIImage, configAuth, configImage } from "@/utils/constant";
-import DrinkForm from "@/components/dashboard/form/DrinkForm";
+import { accessToken, baseAPI, configAuth } from "@/utils/constant";
 import { parseCookies } from "nookies";
+import DrinkForm from "@/components/dashboard/form/DrinkForm";
 import axiosInstance from "@/utils/axiosInstance";
-import Swal from "sweetalert2";
-import { Paper } from "@mui/material";
 import { useRouter } from "next/router";
+import { Paper } from "@mui/material";
 
 export async function getServerSideProps(context) {
   const cookies = parseCookies(context);
   const accessToken = cookies.accessToken;
-  const res = await fetch(`${baseAPI}/categories`, configAuth(accessToken));
-  const categories = await res.json();
-  return { props: { categories } };
+  const { params } = context;
+  const { id } = params;
+  const res = await fetch(`${baseAPI}/drinks/${id}`, configAuth(accessToken));
+  if (res.status === 400) {
+    // Redirect to a 404 page
+    return {
+      redirect: {
+        destination: "/404", // The path to your 404 page
+        permanent: false,
+      },
+    };
+  }
+  const drinkAPI = await res.json();
+
+  const res1 = await fetch(`${baseAPI}/categories`, configAuth(accessToken));
+  const categories = await res1.json();
+  // Fetch data based on the 'id' parameter
+  // Example: const employeeData = fetchEmployeeData(id);
+  return {
+    props: {
+      drinkAPI,
+      categories,
+      // Other data you want to pass to the component
+    },
+  };
 }
 
-function createDrink({ categories }) {
-  const [drink, setDrink] = useState({ name: "", price: 15000, imageUrl: "" });
-  const [category, setCategory] = useState({ id: "", name: "" });
+function updatefood({ drinkAPI, categories }) {
   const router = useRouter();
+  const { name, price, imageUrl } = drinkAPI.data;
+  const [drink, setDrink] = useState({ name: name, price: price, imageUrl: imageUrl });
+  const [category, setCategory] = useState(drinkAPI.data.category);
   const handleChange = async (event) => {
     const { name, value, files } = event.target;
     // Update for thumbnail preview
     if (files && files[0]) {
       const file = files[0];
       try {
-        Swal.fire({
-          title: "Uploading...",
-          text: "Please wait while the image is being uploaded.",
-          allowOutsideClick: false,
-          didOpen: () => {
-            Swal.showLoading();
-          },
-        });
         const { data } = await axios.post(`${baseAPIImage}/upload`, { file: file }, configImage(accessToken));
+        console.log(data);
         setDrink((prev) => ({
           ...prev,
           imageUrl: data.imageUrl,
         }));
-        Swal.close();
         Swal.fire({
           title: "Success!",
           text: `upload image successfully`,
@@ -64,17 +79,8 @@ function createDrink({ categories }) {
   const handleCategoryChange = (event, newValue) => {
     setCategory(newValue);
   };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!category.id) {
-      Swal.fire({
-        title: "Error",
-        text: `Select a category`,
-        icon: "warning",
-      });
-      return;
-    }
     const drinkBody = {
       name: drink.name,
       price: Number(drink.price),
@@ -83,7 +89,7 @@ function createDrink({ categories }) {
     };
 
     try {
-      const { data } = await axiosInstance.post("drinks", drinkBody, configAuth(accessToken));
+      const { data } = await axiosInstance.put(`drinks/${router.query.id}`, drinkBody, configAuth(accessToken));
       router.back();
     } catch (e) {}
   };
@@ -97,10 +103,10 @@ function createDrink({ categories }) {
         drink={drink}
         category={category}
         handleSubmit={handleSubmit}
-        text={"Create"}
+        text={"Upadte"}
       />
     </Paper>
   );
 }
 
-export default createDrink;
+export default updatefood;

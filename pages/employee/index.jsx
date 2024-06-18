@@ -27,8 +27,9 @@ export async function getServerSideProps() {
 function employee({ categories, tables }) {
   const [orderList, setOrderList] = useState([]);
   const [drinks, setDrinks] = useState([]);
-  const [cash, setCash] = useState(50);
+
   const [option, setOption] = useState(null);
+  const [cash, setCash] = useState(50);
   const [table, setTable] = useState(null);
   const [open, setOpen] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -41,15 +42,16 @@ function employee({ categories, tables }) {
   const handleOpen = () => {
     setOpen(true);
   };
-  const axiosgetDrinks = async (category) => {
-    let pathAPI = "drinks/all";
-    if (category) pathAPI += `?category=${category}`;
-    try {
-      const { data } = await axiosInstance.get(`${pathAPI}`);
-      setDrinks(data.data);
-    } catch (e) {}
-  };
+
   useEffect(() => {
+    const axiosgetDrinks = async (category) => {
+      let pathAPI = "drinks/all";
+      if (category) pathAPI += `?category=${category}`;
+      try {
+        const { data } = await axiosInstance.get(`${pathAPI}`);
+        setDrinks(data.data);
+      } catch (e) {}
+    };
     axiosgetDrinks(option);
   }, [option]);
 
@@ -71,7 +73,9 @@ function employee({ categories, tables }) {
     handleClose();
     try {
       const { data } = await axiosInstance.post("bills", jsonData, configAuth(accessToken));
-      console.log(data);
+      setOrderList([]);
+      setCash(50);
+      setTable(null);
     } catch (e) {}
   };
 
@@ -123,7 +127,15 @@ function employee({ categories, tables }) {
     totalAllPrice += Number(order.price * order.amount);
   });
   const handleClickOpen = () => {
-    if (totalAllPrice !== 0) {
+    const current = new Date();
+    console.log(current.getHours());
+    if (!(current.getHours() >= 7 && current.getHours() < 23)) {
+      Swal.fire({
+        title: "Failed",
+        text: `You can submit order 7.00-23.00 on daily`,
+        icon: "warning",
+      });
+    } else if (totalAllPrice !== 0) {
       if (!table) {
         Swal.fire({
           title: "Failed",
@@ -153,39 +165,37 @@ function employee({ categories, tables }) {
       {" "}
       <Grid container>
         {/* Left half for menu with border */}
-        <Grid item xs={8}>
-          <Container sx={{ justifyContent: "center" }}>
-            <Button
-              sx={{ mt: "15px", ml: "25px", p: 1, textTransform: "none" }}
-              onClick={() => {
-                setOption(null);
-              }}
-              variant="contained"
-              color="secondary"
-            >
-              All drink
-            </Button>
-            {categories.data && categories.data.length > 0
-              ? categories.data.map((category) => (
-                  <Button
-                    sx={{ mt: "15px", ml: "25px", p: 1, textTransform: "none" }}
-                    key={category.id}
-                    onClick={() => {
-                      setOption(category.name);
-                    }}
-                    variant="contained"
-                    color="secondary"
-                  >
-                    {category.name}
-                  </Button>
-                ))
-              : null}
-          </Container>
+        <Grid item xs={8} sx={{ justifyContent: "center" }}>
+          <Button
+            sx={{ mt: "15px", ml: "25px", p: 1, textTransform: "none" }}
+            onClick={() => {
+              setOption(null);
+            }}
+            variant="contained"
+            color="secondary"
+          >
+            All drink
+          </Button>
+          {categories.data && categories.data.length > 0
+            ? categories.data.map((category) => (
+                <Button
+                  sx={{ mt: "15px", ml: "25px", p: 1, textTransform: "none" }}
+                  key={category.id}
+                  onClick={() => {
+                    setOption(category.name);
+                  }}
+                  variant="contained"
+                  color="secondary"
+                >
+                  {category.name}
+                </Button>
+              ))
+            : null}
 
           <Grid container spacing={1} maxWidth="md">
             {drinks && drinks.length > 0
               ? drinks.map((drink) => (
-                  <Grid item key={drink.id} sx={{ mt: 5 }}>
+                  <Grid item key={drink.id} sx={{ mt: 2 }}>
                     <Button
                       onClick={() => {
                         addDrinkToBill(drink);
@@ -196,7 +206,7 @@ function employee({ categories, tables }) {
                           component="div"
                           sx={{
                             // 16:9
-                            paddingTop: "70.25%",
+                            paddingTop: "68%",
                             backgroundSize: "cover", // Ensure the image covers the entire container
                             backgroundPosition: "center", // Center the image
                           }}
@@ -204,7 +214,7 @@ function employee({ categories, tables }) {
                         />
 
                         <CardContent sx={{ flexGrow: 1, textTransform: "none" }}>
-                          <Typography variant="h6">{drink.name}</Typography>
+                          <Typography variant="inherit">{drink.name}</Typography>
                           <Typography variant="subtitle1"> {drink.price} đồng</Typography>
                         </CardContent>
                       </Card>
@@ -264,12 +274,11 @@ function employee({ categories, tables }) {
               <br />
               <Typography d> Total : {totalAllPrice} đồng</Typography>
               <br />
-
               <Button variant="contained" endIcon={<FavoriteIcon />} onClick={handleClickOpen}>
                 Order
               </Button>
-              <Grid container>
-                <Grid item sx={{ mt: 3 }} xs={5}>
+              <Grid display={"flex"} sx={{ mt: 3 }}>
+                <Grid xs={5}>
                   <TextField
                     required
                     fullWidth
@@ -280,13 +289,14 @@ function employee({ categories, tables }) {
                     autoComplete="Cash"
                     value={cash}
                     onChange={(e) => {
-                      const newPrice = e.target.value < 0 ? totalAllPrice : parseInt(e.target.value);
+                      const newPrice = e.target.value < 0 ? 0 : parseInt(e.target.value);
                       setCash(newPrice);
+                      if (!newPrice) setCash(0);
                     }}
                   />
                 </Grid>
-                <Grid item xs={1} />
-                <Grid item sx={{ mt: 3 }} xs={5}>
+                <Grid xs={1} />
+                <Grid xs={5}>
                   <Autocomplete
                     width="50px"
                     id="combo-box-demo"
@@ -300,15 +310,16 @@ function employee({ categories, tables }) {
                     renderInput={(params) => <TextField {...params} label="Table" />}
                   />
                 </Grid>
-                <Grid item sx={{ p: 1 }}>
-                  <Typography>Cash: {cash * 1000} đ</Typography>
-                </Grid>
+                <Grid xs={1} />
+              </Grid>
+              <Grid sx={{ mt: 2 }}>
+                <Typography>Cash: {cash * 1000} đ</Typography>
               </Grid>
             </ul>
             <Dialog onClose={handleClose} aria-labelledby="customized-dialog-title" open={open}>
               <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">
                 <Typography align="center" variant="h5">
-                  Table:
+                  Table: {table ? table.name : ""}
                 </Typography>
               </DialogTitle>
               <IconButton

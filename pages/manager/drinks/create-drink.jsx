@@ -20,28 +20,21 @@ export async function getServerSideProps(context) {
 
 function createDrink({ categories }) {
   const [drink, setDrink] = useState({ name: "", price: 15000, imageUrl: "" });
-  const [category, setCategory] = useState({ id: "", name: "" });
+  const [category, setCategory] = useState(null);
   const router = useRouter();
   const handleChange = async (event) => {
     const { name, value, files } = event.target;
     // Update for thumbnail preview
     if (files && files[0]) {
       const file = files[0];
+      console.log(file);
       try {
-        Swal.fire({
-          title: "Uploading...",
-          text: "Please wait while the image is being uploaded.",
-          allowOutsideClick: false,
-          didOpen: () => {
-            Swal.showLoading();
-          },
-        });
         const { data } = await axios.post(`${baseAPIImage}/upload`, { file: file }, configImage(accessToken));
+        console.log(data);
         setDrink((prev) => ({
           ...prev,
           imageUrl: data.imageUrl,
         }));
-        Swal.close();
         Swal.fire({
           title: "Success!",
           text: `upload image successfully`,
@@ -67,21 +60,13 @@ function createDrink({ categories }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!category.id) {
-      Swal.fire({
-        title: "Error",
-        text: `Select a category`,
-        icon: "warning",
-      });
-      return;
-    }
     const drinkBody = {
       name: drink.name,
       price: Number(drink.price),
       imageUrl: drink.imageUrl,
       categoryId: category.id,
     };
-
+    console.log(drinkBody);
     try {
       const { data } = await axiosInstance.post("drinks", drinkBody, configAuth(accessToken));
       router.back();

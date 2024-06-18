@@ -17,23 +17,18 @@ axiosInstance.interceptors.response.use(
         icon: "success",
       });
     }
-
+    const methodToCheck = ["patch", "put", "delete"];
+    const isMatchingPath = methodToCheck.some((path) => {
+      return response.config.method.includes(path);
+    });
     // Check if the method is PATCH and status is 200
-    if (response.status === 200 && response.config.method === "patch") {
+    if (response.status === 200 && isMatchingPath) {
       Swal.fire({
         title: "Update Success!",
         text: `${response.data.message}`,
         icon: "success",
       });
     }
-    if (response.status === 200 && response.config.method === "delete") {
-      Swal.fire({
-        title: "Delete Success!",
-        text: `${response.data.message}`,
-        icon: "success",
-      });
-    }
-
     return response;
   },
   (error) => {

@@ -28,9 +28,9 @@ const Chart = ({ bills }) => {
     );
   }
   return (
-    <ResponsiveContainer width="15%" height={250}>
+    <ResponsiveContainer>
       <BarChart data={chartData} margin={{ left: 15, top: 20 }}>
-        <CartesianGrid strokeDasharray="3 3" />
+        <CartesianGrid />
         <XAxis dataKey="day" />
         <YAxis color={red[400]} dataKey="total" />
         <Tooltip />

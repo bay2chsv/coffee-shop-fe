@@ -1,29 +1,26 @@
-import { Autocomplete, Button, Grid, Link, TextField } from "@mui/material";
+import { Button, Grid, Paper } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import { DataGrid } from "@mui/x-data-grid";
+
 import axiosInstance from "@/utils/axiosInstance";
-import { green, red } from "@mui/material/colors";
 import Swal from "sweetalert2";
 import { accessToken, configAuth } from "@/utils/constant";
+import Table from "@/components/Table";
+function indexCoffee() {
+  const [coffeetable, setCoffeetable] = useState([]);
 
-export default function CategoryTable({ categories }) {
-  const [categoryTable, setCategoryTable] = useState([]);
-  const [search, setSearch] = useState(null);
   const [pagination, setPagination] = useState({ page: 1, pageSize: 5, totalItem: 0 });
 
-  const axiosgetAllDrink = async () => {
-    let pathUrl = `categories?page=${pagination.page}&limit=${pagination.pageSize}`;
-    if (search) {
-      pathUrl += `&name=${category.name}`;
-    }
+  const axiosgetAllCoffeeTable = async () => {
+    let pathUrl = `coffeetables?page=${pagination.page}&limit=${pagination.pageSize}`;
+
     const { data } = await axiosInstance.get(pathUrl);
-    setCategoryTable(data.data);
+    setCoffeetable(data.data);
     setPagination((prev) => ({ ...prev, totalItem: data.totalItem }));
   };
 
   useEffect(() => {
-    axiosgetAllDrink();
-  }, [search, pagination.page, pagination.pageSize]);
+    axiosgetAllCoffeeTable();
+  }, [pagination.page, pagination.pageSize]);
 
   const handlePageChange = (newPage) => {
     setPagination((prev) => ({ ...prev, page: newPage + 1 }));
@@ -54,7 +51,7 @@ export default function CategoryTable({ categories }) {
   ];
   const handleCreate = async () => {
     const { value: formValues } = await Swal.fire({
-      title: "Enter drink details",
+      title: "Enter Table details",
       html: '<input id="swal-input1" class="swal2-input" placeholder="Name">',
       focusConfirm: false,
       confirmButtonText: "Create",
@@ -73,18 +70,18 @@ export default function CategoryTable({ categories }) {
 
     if (formValues) {
       try {
-        const { data } = await axiosInstance.post(`categories?name=${formValues.name}`, {}, configAuth(accessToken));
-        axiosgetAllDrink();
+        const { data } = await axiosInstance.post(`coffeetables?name=${formValues.name}`, {}, configAuth(accessToken));
+        axiosgetAllCoffeeTable();
       } catch (e) {}
       // Now you can use drinkBody as needed
     }
   };
   const handleEdit = async (row) => {
-    const { data } = await axiosInstance.get(`categories/${row.id}`);
-    const category = data.data;
+    const { data } = await axiosInstance.get(`coffeetables/${row.id}`);
+    const coffeetable = data.data;
     const { value: formValues } = await Swal.fire({
-      title: "Enter drink details",
-      html: `<input id="swal-input0" class="swal2-input" value="${category.id}" disabled> <input id="swal-input1" class="swal2-input" value="${category.name}" placeholder="Name"> `,
+      title: "Enter Table details",
+      html: `<input id="swal-input0" class="swal2-input" value="${coffeetable.id}" disabled> <input id="swal-input1" class="swal2-input" value="${coffeetable.name}" placeholder="Name"> `,
       focusConfirm: false,
       confirmButtonText: "Update",
       showCancelButton: true,
@@ -102,9 +99,13 @@ export default function CategoryTable({ categories }) {
 
     if (formValues) {
       try {
-        const { data } = await axiosInstance.patch(`categories/${category.id}?name=${formValues.name.trim()}`, {}, configAuth(accessToken));
-        console.log(data);
-        axiosgetAllDrink();
+        const { data } = await axiosInstance.patch(
+          `coffeetables/${coffeetable.id}?name=${formValues.name.trim()}`,
+          {},
+          configAuth(accessToken)
+        );
+
+        axiosgetAllCoffeeTable();
       } catch (e) {}
       // Now you can use drinkBody as needed
     }
@@ -122,9 +123,8 @@ export default function CategoryTable({ categories }) {
     });
 
     if (result.isConfirmed) {
-      console.log(id);
       try {
-        const { data } = await axiosInstance.delete(`categories/${id}`, configAuth(accessToken));
+        const { data } = await axiosInstance.delete(`coffeetables/${id}`, configAuth(accessToken));
         if (data.success) {
           Swal.fire("Deleted!", data.message, "success");
           axiosgetAllDrink();
@@ -133,58 +133,19 @@ export default function CategoryTable({ categories }) {
     }
   };
   return (
-    <Grid container justifyContent={"center"} justifyItems={"center"}>
-      {/* Left half for menu with border */}
-      <Grid item xs={3}>
-        <Autocomplete
-          disablePortal
-          id="combo-box-demo"
-          value={search}
-          size="small"
-          options={categories}
-          getOptionLabel={(option) => option.name}
-          renderInput={(params) => <TextField {...params} label="Category" />}
-          onChange={(e, newValue) => {
-            setSearch(newValue);
-          }}
-        />
-      </Grid>
-      <Grid item xs={6} />
-      <Grid item xs={3}>
-        <Button
-          variant="contained"
-          onClick={handleCreate}
-          sx={{
-            background: green[300],
-            ":hover": {
-              background: green[600],
-            },
-          }}
-        >
-          Create
-        </Button>
-      </Grid>
-      <Grid item xs={12} maxWidth="md" sx={{ height: 400 }}>
-        <DataGrid
-          rows={categoryTable}
-          columns={columns}
-          paginationMode="server"
-          rowCount={pagination.totalItem}
-          paginationModel={{
-            page: pagination.page - 1,
-            pageSize: pagination.pageSize,
-          }}
-          onPaginationModelChange={(newPagination) => {
-            if (newPagination.pageSize !== pagination.pageSize) {
-              handlePageSizeChange(newPagination.pageSize);
-            }
-            if (newPagination.page !== pagination.page - 1) {
-              handlePageChange(newPagination.page);
-            }
-          }}
-          pageSizeOptions={[5, 10]}
-        />
-      </Grid>
-    </Grid>
+    <Paper sx={{ p: 1 }}>
+      <Table
+        handlePageSizeChange={handlePageSizeChange}
+        handlePageChange={handlePageChange}
+        columns={columns}
+        handleCreate={handleCreate}
+        data={coffeetable}
+        pagination={pagination}
+      >
+        <Grid item xs={3}></Grid>
+        <Grid item xs={6} />
+      </Table>
+    </Paper>
   );
 }
+export default indexCoffee;

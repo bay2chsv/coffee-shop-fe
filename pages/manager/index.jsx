@@ -29,33 +29,21 @@ const months = [
   { value: 12, name: "December" },
 ];
 
-function admin() {
+function manager() {
   const now = new Date();
   const [bills, setBills] = useState([]);
-  const [current, setCurrent] = useState({ year: now.getFullYear(), month: now.getMonth() + 1 });
-  const currentMonth = months.find((month) => month.value === current.month);
+  const current = { year: now.getFullYear(), month: now.getMonth() + 1 };
+
   const axiosGetBillDashBoard = async (year, month) => {
     try {
       const { data } = await axiosInstance.get(`bills/dashboard?year=${year}&month=${month}`, configAuth(accessToken));
       setBills(data.data);
     } catch (e) {}
   };
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setCurrent((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
-  };
+
   useEffect(() => {
     axiosGetBillDashBoard(current.year, current.month);
   }, [current.year, current.month]);
-
-  let profitPerMonth = 0;
-  bills.forEach((bill) => {
-    profitPerMonth += Number(bill.total);
-  });
-
   const isToday = (timestamp) => {
     const today = new Date();
     const date = new Date(timestamp);
@@ -74,39 +62,8 @@ function admin() {
   return (
     <Grid container>
       <Grid container spacing={1}>
-        <Grid item xs={12}>
-          <Grid container>
-            <Grid item xs={2.5}>
-              <Autocomplete
-                disablePortal
-                value={currentMonth}
-                id="combo-box-demo"
-                options={months}
-                getOptionLabel={(option) => option.name}
-                renderInput={(params) => <TextField {...params} label="Month" />}
-                onChange={(e, newValue) => {
-                  if (!newValue) setCurrent((pre) => ({ ...pre, month: now.getMonth() + 1 }));
-                  else {
-                    setCurrent((pre) => ({ ...pre, month: newValue.value }));
-                  }
-                }}
-                sx={{ background: grey[100] }}
-              />
-            </Grid>
-            <Grid item xs={2} marginLeft={3}>
-              <TextField
-                name="year"
-                id="outlined-basic"
-                value={current.year}
-                label="Year"
-                variant="outlined"
-                onChange={handleChange}
-                sx={{ background: grey[100] }}
-              />
-            </Grid>
-          </Grid>
-        </Grid>
-        <Grid item xs={4}>
+        {" "}
+        <Grid item xs={6} sx={{ mb: 2 }}>
           <Paper
             sx={{
               height: 200,
@@ -118,14 +75,14 @@ function admin() {
             }}
           >
             <Typography variant="h6" sx={{ color: "white", mb: 3 }}>
-              Request cancel bill
+              Request cancel bill today
             </Typography>
             <Typography variant="h4" sx={{ color: "white" }}>
               {countCancelBill}
             </Typography>
           </Paper>
         </Grid>
-        <Grid item xs={4}>
+        <Grid item xs={6} sx={{ mb: 2 }}>
           <Paper
             sx={{
               height: 200,
@@ -144,44 +101,19 @@ function admin() {
             </Typography>
           </Paper>
         </Grid>
-        <Grid item xs={4}>
-          <Paper
-            sx={{
-              height: 200,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              backgroundColor: green[300],
-              justifyContent: "center",
-            }}
-          >
-            <Typography variant="h6" sx={{ color: "white", mb: 3 }}>
-              Profit per Month
-            </Typography>
-            <Typography variant="h4" sx={{ color: "white" }}>
-              {profitPerMonth} đ
-            </Typography>
-          </Paper>
-        </Grid>
       </Grid>
-
-      <Grid item xs={8} sx={{ mt: 2 }}>
-        <Grid>
-          <Paper sx={{ height: 330 }}>
-            <Chart bills={bills} />
-          </Paper>
-        </Grid>
+      <Grid item xs={8}>
+        <Paper sx={{ height: 330 }}>
+          <Chart bills={bills} />
+        </Paper>
       </Grid>
-      <Grid xs={4} sx={{ mt: 2 }}>
+      <Grid item xs={4}>
         <Paper sx={{ height: 330, alignContent: "center" }}>
           <Pie bills={bills} />
         </Paper>
-      </Grid>
-      <Grid item xs={12}>
-        <Paper></Paper>
       </Grid>
     </Grid>
   );
 }
 
-export default admin;
+export default manager;

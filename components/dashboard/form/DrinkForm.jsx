@@ -1,4 +1,3 @@
-import Dashboard from "@/components/dashboard/Dashboard";
 import * as React from "react";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
@@ -8,10 +7,6 @@ import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import Select from "@mui/material/Select";
-import InputLabel from "@mui/material/InputLabel";
 import CoffeeIcon from "@mui/icons-material/Coffee";
 import { Autocomplete } from "@mui/material";
 import { red } from "@mui/material/colors";
@@ -82,7 +77,7 @@ function DrinkForm({ drink, category, handleSubmit, handleCategoryChange, handle
             </Button>
           </Grid>
           <Grid item xs={12}>
-            {drink.imageUrl && <img src={drink.imageUrl} alt="Selected produce" style={{ maxWidth: "75%" }} />}
+            {drink.imageUrl && <img src={drink.imageUrl} alt="Selected produce" style={{ maxWidth: "75%", maxHeight: "200px" }} />}
           </Grid>
         </Grid>
         <Grid item xs={12} sx={{ display: "flex", mt: 3, mb: 2 }}>

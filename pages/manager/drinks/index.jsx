@@ -1,12 +1,20 @@
-import { Autocomplete, Button, Grid, Link, TextField } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import { DataGrid } from "@mui/x-data-grid";
-import axiosInstance from "@/utils/axiosInstance";
-import { green, red } from "@mui/material/colors";
-import Swal from "sweetalert2";
-import { accessToken, configAuth } from "@/utils/constant";
 
-export default function Product({ categories }) {
+import { accessToken, baseAPI, configAuth } from "@/utils/constant";
+import { parseCookies } from "nookies";
+import { Autocomplete, Button, Grid, Paper, TextField } from "@mui/material";
+import Table from "@/components/Table";
+import axiosInstance from "@/utils/axiosInstance";
+import Swal from "sweetalert2";
+
+export async function getServerSideProps(context) {
+  const cookies = parseCookies(context);
+  const accessToken = cookies.accessToken;
+  const res = await fetch(`${baseAPI}/categories`, configAuth(accessToken));
+  const categories = await res.json();
+  return { props: { categories } };
+}
+function Drink({ categories }) {
   const [drinks, setDrinks] = useState([]);
   const [category, setCategory] = useState(null);
   const [pagination, setPagination] = useState({ page: 1, pageSize: 5, totalItem: 0 });
@@ -72,7 +80,6 @@ export default function Product({ categories }) {
   const handleEdit = (row) => {
     window.location.href = `drinks/${row.id}`;
   };
-
   const handleDelete = async (id) => {
     const result = await Swal.fire({
       title: "Are you sure?",
@@ -85,7 +92,6 @@ export default function Product({ categories }) {
     });
 
     if (result.isConfirmed) {
-      console.log(id);
       try {
         const { data } = await axiosInstance.delete(`drinks/${id}`, configAuth(accessToken));
         if (data.success) {
@@ -95,61 +101,39 @@ export default function Product({ categories }) {
       } catch (error) {}
     }
   };
+  const handleCreate = () => {
+    window.location.href = "drinks/create-drink";
+  };
   return (
-    <Grid container justifyContent={"center"} justifyItems={"center"}>
-      {/* Left half for menu with border */}
-      <Grid item xs={3}>
-        <Autocomplete
-          disablePortal
-          id="combo-box-demo"
-          value={category}
-          size="small"
-          options={categories}
-          getOptionLabel={(option) => option.name}
-          renderInput={(params) => <TextField {...params} label="Category" />}
-          onChange={(e, newValue) => {
-            setCategory(newValue);
-          }}
-        />
-      </Grid>
-      <Grid item xs={6} />
-      <Grid item xs={3}>
-        <Button
-          variant="contained"
-          onClick={() => {
-            window.location.href = "drinks/create-drink";
-          }}
-          sx={{
-            background: green[300],
-            ":hover": {
-              background: green[600],
-            },
-          }}
-        >
-          Create
-        </Button>
-      </Grid>
-      <Grid item xs={12} maxWidth="md" sx={{ height: 400 }}>
-        <DataGrid
-          rows={drinks}
-          columns={columns}
-          paginationMode="server"
-          rowCount={pagination.totalItem}
-          paginationModel={{
-            page: pagination.page - 1,
-            pageSize: pagination.pageSize,
-          }}
-          onPaginationModelChange={(newPagination) => {
-            if (newPagination.pageSize !== pagination.pageSize) {
-              handlePageSizeChange(newPagination.pageSize);
-            }
-            if (newPagination.page !== pagination.page - 1) {
-              handlePageChange(newPagination.page);
-            }
-          }}
-          pageSizeOptions={[5, 10]}
-        />
-      </Grid>
-    </Grid>
+    <Paper>
+      <Table
+        handlePageSizeChange={handlePageSizeChange}
+        handlePageChange={handlePageChange}
+        columns={columns}
+        handleCreate={handleCreate}
+        pagination={pagination}
+        data={drinks}
+        height={100}
+        tableHeight={570}
+      >
+        <Grid item xs={3}>
+          <Autocomplete
+            disablePortal
+            id="combo-box-demo"
+            value={category}
+            size="small"
+            options={categories.data}
+            getOptionLabel={(option) => option.name}
+            renderInput={(params) => <TextField {...params} label="Category" />}
+            onChange={(e, newValue) => {
+              setCategory(newValue);
+            }}
+          />
+        </Grid>
+        <Grid item xs={6} />
+      </Table>
+    </Paper>
   );
 }
+
+export default Drink;

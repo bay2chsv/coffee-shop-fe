@@ -7,4 +7,5 @@ export const roleConfig = {
   ADMIN: "admin",
   MANAGER: "manager",
   EMPLOYEE: "employee",
+  USER: "user",
 };

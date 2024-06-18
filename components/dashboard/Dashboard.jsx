@@ -15,7 +15,7 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import { useState } from "react";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
-import MainAuth from "@/components/Auth";
+import Profile from "@/components/Profile";
 const lightTheme = createTheme({
   palette: {
     mode: "light",
@@ -130,7 +130,7 @@ export default function Dashboard({ children, name, list }) {
             >
               {themeMode === "light" ? <LightModeIcon /> : <DarkModeIcon />}
             </IconButton>
-            <MainAuth />
+            <Profile />
           </Toolbar>
         </AppBar>
         <Drawer variant="permanent" open={open}>

@@ -3,7 +3,7 @@ import * as React from "react";
 import axios from "axios";
 import { useState } from "react";
 
-import { baseAPI, configAuth } from "@/utils/constant";
+import { accessToken, baseAPI, configAuth } from "@/utils/constant";
 import { parseCookies } from "nookies";
 import DrinkForm from "@/components/dashboard/form/DrinkForm";
 import axiosInstance from "@/utils/axiosInstance";
@@ -79,17 +79,20 @@ function updatefood({ drinkAPI, categories }) {
   const handleCategoryChange = (event, newValue) => {
     setCategory(newValue);
   };
-
+  console.log(drink);
+  console.log(category);
   const handleSubmit = async (event) => {
     event.preventDefault();
     const drinkBody = {
       name: drink.name,
-      price: drink.price,
+      price: Number(drink.price),
       imageUrl: drink.imageUrl,
       categoryId: category.id,
     };
+    console.log(drinkBody);
     try {
       const { data } = await axiosInstance.put(`drinks/${router.query.id}`, drinkBody, configAuth(accessToken));
+      router.back();
     } catch (e) {}
   };
 

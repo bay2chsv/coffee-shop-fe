@@ -68,6 +68,16 @@ export const AdminListItems = () => {
         </ListItemIcon>
         <ListItemText primary="Categories" />
       </ListItemButton>
+      <ListItemButton
+        selected={isActive("/admin/tables")}
+        href="/admin/tables"
+        sx={{ "&.Mui-selected": { backgroundColor: "#6881FF", color: "white" } }}
+      >
+        <ListItemIcon>
+          <ArticleIcon />
+        </ListItemIcon>
+        <ListItemText primary="Tables" />
+      </ListItemButton>
     </React.Fragment>
   );
 };
@@ -109,7 +119,7 @@ export const ManagerListItems = () => {
         <ListItemIcon>
           <SellOutlinedIcon />
         </ListItemIcon>
-        <ListItemText primary="Tables" />
+        <ListItemText primary="Drinks" />
       </ListItemButton>
       {/* Categories */}
       <ListItemButton
@@ -120,7 +130,17 @@ export const ManagerListItems = () => {
         <ListItemIcon>
           <ArticleIcon />
         </ListItemIcon>
-        <ListItemText primary="Drinks" />
+        <ListItemText primary="Categories" />
+      </ListItemButton>
+      <ListItemButton
+        selected={isActive("/manager/tables")}
+        href="/manager/tables"
+        sx={{ "&.Mui-selected": { backgroundColor: "#6881FF", color: "white" } }}
+      >
+        <ListItemIcon>
+          <ArticleIcon />
+        </ListItemIcon>
+        <ListItemText primary="Tables" />
       </ListItemButton>
     </React.Fragment>
   );
@@ -152,6 +172,22 @@ export const EmployeeListItems = () => {
           <ArticleIcon />
         </ListItemIcon>
         <ListItemText primary="Bill today" />
+      </ListItemButton>
+    </React.Fragment>
+  );
+};
+export const UserListItems = () => {
+  const router = useRouter();
+
+  // Function to check if the path matches the current URL
+
+  return (
+    <React.Fragment>
+      <ListItemButton href="/" sx={{ "&.Mui-selected": { backgroundColor: "primary.main", color: "white" } }}>
+        <ListItemIcon>
+          <DashboardIcon />
+        </ListItemIcon>
+        <ListItemText primary="Main" />
       </ListItemButton>
     </React.Fragment>
   );
